@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 using API.DTOs;
 using API.Services;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    [AllowAnonymous]  // allows global anonymous connection to endpoints in this class
     [ApiController]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase

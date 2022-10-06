@@ -8,6 +8,8 @@ using Application.Activities;
 using Application.Core;
 using FluentValidation.AspNetCore;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Persistence;
@@ -28,7 +30,13 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers()
+            services.AddControllers(opt =>
+            {
+                // this ensures every single endpoint to require authentication unless we set [AllowAnonymous] attribute
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                opt.Filters.Add(new AuthorizeFilter(policy));
+
+            })
                 .AddFluentValidation(config =>
                 {
                     config.RegisterValidatorsFromAssemblyContaining<Create>();
@@ -41,7 +49,7 @@ namespace API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<ExceptionMiddleware>();
-            
+
             if (env.IsDevelopment())
             {
                 // app.UseDeveloperExceptionPage();
