@@ -8,6 +8,7 @@ using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -19,8 +20,8 @@ namespace API.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly TokenService _tokenService;
-        
-        public AccountController(UserManager<AppUser> userManager, 
+
+        public AccountController(UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
         TokenService tokenService
         )
@@ -31,7 +32,7 @@ namespace API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<UserDto>> Login(LoginDto loginDto )
+        public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user is null)
@@ -40,7 +41,7 @@ namespace API.Controllers
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
                 return new UserDto
                 {
@@ -52,6 +53,42 @@ namespace API.Controllers
             }
 
             return Unauthorized();
-        } 
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<UserDto>> RegisterUser(RegisterDto registerDto)
+        {
+            if (await _userManager.Users.AnyAsync(x => x.Email == registerDto.Email))
+            {
+                return BadRequest("Email taken");
+            }
+
+            if (await _userManager.Users.AnyAsync(x => x.UserName == registerDto.Username))
+            {
+                return BadRequest("Username taken");
+            }
+
+            var user = new AppUser
+            {
+                DisplayName = registerDto.DisplayName,
+                Email = registerDto.Email,
+                UserName = registerDto.Username
+            };
+
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+            if (result.Succeeded)
+            {
+                return new UserDto
+                {
+                    DisplayName = user.DisplayName,
+                    Image = null,
+                    Token = _tokenService.CreateToken(user),
+                    Username = user.UserName
+                };
+            }
+
+            return BadRequest("Problem registering user");
+        }
     }
 }

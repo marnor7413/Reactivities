@@ -18,6 +18,10 @@ namespace API.Services
             _config = config;
             
         }
+        /// <summary>
+        /// Creates a JWT token based upon a user
+        /// Returns: JWT token 
+        /// </summary>
         public string CreateToken(AppUser user)
         {
             var claims = new List<Claim>
