@@ -12,6 +12,12 @@ namespace API.Services
 {
     public class TokenService
     {
+        private readonly IConfiguration _config;
+        public TokenService(IConfiguration config)
+        {
+            _config = config;
+            
+        }
         public string CreateToken(AppUser user)
         {
             var claims = new List<Claim>
@@ -22,7 +28,7 @@ namespace API.Services
             };
 
             // import nuget Microsoft.AspNetCore.Authentication.JwtBearer
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("super secret key")); 
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["TokenKey"])); 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature); // generate signing credentials by encrypting the key
 
             var tokenDescriptor = new SecurityTokenDescriptor
