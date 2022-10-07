@@ -80,6 +80,11 @@ namespace API.Controllers
             return BadRequest("Problem registering user");
         }
 
+        ///<summary>
+        /// Fetches the current logged in user associated with the session and returns information about current user.
+        /// 1. Extracts email address from the JWT token sent by the client
+        /// 2. Checks the ClaimsPrincipal (by accessing User) for a user with the specified email address
+        ///</summary>
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
