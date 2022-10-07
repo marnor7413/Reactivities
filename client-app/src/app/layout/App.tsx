@@ -14,10 +14,11 @@ import ServerError from '../../features/errors/ServerError';
 import LoginForm from '../../features/users/LoginForm';
 import { useStore } from '../stores/store';
 import LoadingComponent from './LoadingComponent';
+import ModalContainer from '../Common/Modals/ModalContainer';
 
 function App() {
   const location = useLocation();
-  const {commonStore, userStore} = useStore();
+  const { commonStore, userStore } = useStore();
 
   useEffect(() => {
     if (commonStore.token) {
@@ -28,17 +29,18 @@ function App() {
     }
   }, [commonStore, userStore])
 
-  if(!commonStore.appLoaded) return <LoadingComponent content='Loading app...'/>
+  if (!commonStore.appLoaded) return <LoadingComponent content='Loading app...' />
 
   return (
     <>
+      <ToastContainer position='bottom-right' hideProgressBar />
+      <ModalContainer />
       <Route exact path='/' component={HomePage} />
       <Route
         path={'/(.+)'}
         render={() => (
           <>
-            <ToastContainer position='bottom-right' hideProgressBar />
-            <NavBar />
+             <NavBar />
             <Container style={{ marginTop: '7em' }}>
               <Switch>
                 <Route exact path='/activities' component={ActivityDashboard} />
