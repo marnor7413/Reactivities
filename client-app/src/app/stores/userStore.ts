@@ -39,4 +39,15 @@ export default class UserStore {
 
         history.push('/');
     }
+
+    // note: current JWT-token is sent to the API via axios. This is used for identifying current user.
+    //       Sending of token is handled by an interceptor in agent.ts where axios is implemented.
+    getUser = async () => {
+        try {
+            const user = await agent.Account.current();
+            runInAction(() => this.user = user);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
