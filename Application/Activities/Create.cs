@@ -1,7 +1,9 @@
 using Application.Core;
+using Application.Interfaces;
 using Domain;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 using static Application.Activities.Create;
 
@@ -26,15 +28,33 @@ namespace Application.Activities
     public class Handler : IRequestHandler<Command, Result<Unit>>
     {
         private readonly DataContext _context;
+        private readonly IUserAccessor _userAccessor;
 
-        public Handler(DataContext dataContext)
+        public Handler(DataContext dataContext, IUserAccessor userAccessor)
         {
+            _userAccessor = userAccessor;
             _context = dataContext;
         }
 
+        /// <summary>
+        /// get current logged in user with help of Infrastructure-project and add to created activity as host
+        /// </summary>
         public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
+            // uses Infrastructure-project to get the username of the current user
+            var user = await _context.Users.FirstOrDefaultAsync(x => 
+                x.UserName == _userAccessor.GetUsername());
+
+            var attendee = new ActivityAttendee 
+            {
+                AppUser = user,
+                Activity = request.Activity,
+                IsHost = true
+            };
+
+            request.Activity.Attendees.Add(attendee);
             _context.Activities.Add(request.Activity);
+
             var result = await _context.SaveChangesAsync() > 0;
 
             if (!result) return Result<Unit>.Failure("Failed to create activity");
